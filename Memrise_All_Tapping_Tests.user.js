@@ -4,7 +4,7 @@
 // @description    All tapping tests when doing Memrise learning
 // @match          http://www.memrise.com/course/*/garden/*
 // @match          http://www.memrise.com/garden/review/*
-// @version        0.0.2
+// @version        0.0.3
 // @updateURL      https://github.com/cooljingle/memrise-all-tapping-tests/raw/master/Memrise_All_Tapping_Tests.user.js
 // @downloadURL    https://github.com/cooljingle/memrise-all-tapping-tests/raw/master/Memrise_All_Tapping_Tests.user.js
 // @grant          none
@@ -28,6 +28,20 @@ $(document).ready(function(){
                     result.template = "tapping";
                 }
                 return result;
+            };
+        }());
+
+        MEMRISE.garden.box_types.TappingTestBox.prototype.initialize = (function() {
+            var cached_function = MEMRISE.garden.box_types.TappingTestBox.prototype.initialize;
+            return function() {
+                cached_function.apply(this, arguments);
+                var t = this.thing.columns[this.column_a];
+                if(t.tapping_choices.corrects.length === 0) {
+                    t.tapping_choices.corrects = t.val.split('');
+                    t.possible_answers.tapping.push(t.val.split(''));
+                    this.answer_words = t.tapping_choices.corrects;
+                    this.choice_words = this.get_choice_words();
+                }
             };
         }());
     }
