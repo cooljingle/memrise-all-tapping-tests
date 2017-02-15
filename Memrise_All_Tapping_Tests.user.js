@@ -2,9 +2,9 @@
 // @name           Memrise All Tapping Tests
 // @namespace      https://github.com/cooljingle
 // @description    All tapping tests when doing Memrise learning
-// @match          http://www.memrise.com/course/*/garden/*
-// @match          http://www.memrise.com/garden/review/*
-// @version        0.0.3
+// @match          https://www.memrise.com/course/*/garden/*
+// @match          https://www.memrise.com/garden/review/*
+// @version        0.0.4
 // @updateURL      https://github.com/cooljingle/memrise-all-tapping-tests/raw/master/Memrise_All_Tapping_Tests.user.js
 // @downloadURL    https://github.com/cooljingle/memrise-all-tapping-tests/raw/master/Memrise_All_Tapping_Tests.user.js
 // @grant          none
