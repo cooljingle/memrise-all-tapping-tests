@@ -4,17 +4,18 @@
 // @description    All tapping tests when doing Memrise learning
 // @match          https://www.memrise.com/course/*/garden/*
 // @match          https://www.memrise.com/garden/review/*
-// @version        0.0.4
+// @version        0.0.5
 // @updateURL      https://github.com/cooljingle/memrise-all-tapping-tests/raw/master/Memrise_All_Tapping_Tests.user.js
 // @downloadURL    https://github.com/cooljingle/memrise-all-tapping-tests/raw/master/Memrise_All_Tapping_Tests.user.js
 // @grant          none
 // ==/UserScript==
 
 $(document).ready(function(){
-    MEMRISE.garden.boxes.load = (function() {
-        var cached_function = MEMRISE.garden.boxes.load;
+    MEMRISE.garden.session_start = (function() {
+        var cached_function = MEMRISE.garden.session_start;
         return function() {
             enableAllTappingTests();
+            MEMRISE.garden.populateScreens();
             return cached_function.apply(this, arguments);
         };
     }());
@@ -24,25 +25,29 @@ $(document).ready(function(){
             var cached_function = MEMRISE.garden.session.box_factory.make;
             return function() {
                 var result = cached_function.apply(this, arguments);
-                if(_.contains(["typing", "multiple_choice", "audio-typing", "audio-multiple-choice"], result.template)) {
+                if(_.contains(["typing", "reversed_multiple_choice", "multiple_choice", "audio-typing", "audio-multiple-choice"], result.template)) {
                     result.template = "tapping";
                 }
                 return result;
             };
         }());
 
-        MEMRISE.garden.box_types.TappingTestBox.prototype.initialize = (function() {
-            var cached_function = MEMRISE.garden.box_types.TappingTestBox.prototype.initialize;
-            return function() {
-                cached_function.apply(this, arguments);
-                var t = this.thing.columns[this.column_a];
-                if(t.tapping_choices.corrects.length === 0) {
-                    t.tapping_choices.corrects = t.val.split('');
-                    t.possible_answers.tapping.push(t.val.split(''));
-                    this.answer_words = t.tapping_choices.corrects;
-                    this.choice_words = this.get_choice_words();
+        MEMRISE.garden.populateScreens = function() {
+            _.each(MEMRISE.garden.learnables || _.indexBy(MEMRISE.garden.session_data.learnables, 'learnable_id'), function(v, k) {
+                var learnableScreens = (MEMRISE.garden.screens || MEMRISE.garden.session_data.screens)[k];
+                if(learnableScreens && !_.contains(Object.keys(learnableScreens), "tapping")) {
+                    var screenBase = _.find([learnableScreens.multiple_choice, learnableScreens.reversed_multiple_choice], s => s.answer.kind === "text");
+                    if(screenBase) {
+                        //if multi word answer, split on spaces and punctuation
+                        var splitParam = _.contains(screenBase.correct[0], " ") ? new RegExp(/[\u3000-\u303F\u2000-\u206F\u2E00-\u2E7F\\'!"#$%&()*+,\-\/:;<=>?@\[\]^_`{|}~¿¡ ]/) : "";
+                        learnableScreens.tapping = $.extend({}, screenBase, {
+                            template: "tapping",
+                            choices: _.uniq(_.flatten(_.map(screenBase.choices, c => c.split(splitParam).filter(x => x !== "")))),
+                            correct: _.map(screenBase.correct, c => c.split(splitParam).filter(x => x !== "").map(x => x.toLowerCase()))
+                        });
+                    }
                 }
-            };
-        }());
+            });
+        };
     }
 });
