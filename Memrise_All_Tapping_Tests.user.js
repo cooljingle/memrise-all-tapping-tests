@@ -4,7 +4,7 @@
 // @description    All tapping tests when doing Memrise learning
 // @match          https://www.memrise.com/course/*/garden/*
 // @match          https://www.memrise.com/garden/review/*
-// @version        0.0.6
+// @version        0.0.7
 // @updateURL      https://github.com/cooljingle/memrise-all-tapping-tests/raw/master/Memrise_All_Tapping_Tests.user.js
 // @downloadURL    https://github.com/cooljingle/memrise-all-tapping-tests/raw/master/Memrise_All_Tapping_Tests.user.js
 // @grant          none
@@ -15,7 +15,6 @@ $(document).ready(function(){
     MEMRISE.garden._events.start.push(() => {
         enableAllTappingTests();
         MEMRISE.garden.populateScreens();
-        return cached_function.apply(this, arguments);
     });
 
     function enableAllTappingTests() {
