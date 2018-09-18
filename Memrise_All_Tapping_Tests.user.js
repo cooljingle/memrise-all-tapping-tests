@@ -4,7 +4,7 @@
 // @description    All tapping tests when doing Memrise learning
 // @match          https://www.memrise.com/course/*/garden/*
 // @match          https://www.memrise.com/garden/review/*
-// @version        0.0.7
+// @version        0.0.8
 // @updateURL      https://github.com/cooljingle/memrise-all-tapping-tests/raw/master/Memrise_All_Tapping_Tests.user.js
 // @downloadURL    https://github.com/cooljingle/memrise-all-tapping-tests/raw/master/Memrise_All_Tapping_Tests.user.js
 // @grant          none
@@ -31,17 +31,21 @@ $(document).ready(function(){
 
         MEMRISE.garden.populateScreens = function() {
             _.each(MEMRISE.garden.learnables || _.indexBy(MEMRISE.garden.session_data.learnables, 'learnable_id'), function(v, k) {
-                var learnableScreens = (MEMRISE.garden.screens || MEMRISE.garden.session_data.screens)[k];
+                var learnableScreensNew = (MEMRISE.garden.screens || MEMRISE.garden.session_data.screens)[k];
+                var learnableScreens = _.reduce(learnableScreensNew, (x, v, k) => {x[v.template] = v; return x;}, {});
                 if(learnableScreens && !_.contains(Object.keys(learnableScreens), "tapping")) {
                     var screenBase = _.find([learnableScreens.multiple_choice, learnableScreens.reversed_multiple_choice], s => s.answer.kind === "text");
                     if(screenBase) {
                         //if multi word answer, split on spaces and punctuation
                         var splitParam = _.contains(screenBase.correct[0], " ") ? new RegExp(/[\u3000-\u303F\u2000-\u206F\u2E00-\u2E7F\\'!"#$%&()*+,\-\/:;<=>?@\[\]^_`{|}~¿¡ ]/) : "";
-                        learnableScreens.tapping = $.extend({}, screenBase, {
+                        var tappingScreen = $.extend({}, screenBase, {
                             template: "tapping",
                             choices: _.uniq(_.flatten(_.map(screenBase.choices, c => c.split(splitParam).filter(x => x !== "")))),
                             correct: _.map(screenBase.correct, c => c.split(splitParam).filter(x => x !== "").map(x => x.toLowerCase()))
                         });
+                        var screenIndex = Number(_.last(Object.keys(learnableScreensNew))) + 1;
+                        learnableScreensNew[screenIndex] = tappingScreen;
+                        MEMRISE.garden.screen_template_map[k].tapping = [tappingScreen];
                     }
                 }
             });
